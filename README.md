@@ -9,6 +9,19 @@ to ~14.5 GB bf16 before backprop), and the checkpointed path hits a PyTorch
 autograd bug. A rented 24 GB+ NVIDIA GPU with the bf16 checkpoint and no
 gradient checkpointing avoids both problems.
 
+## Status (2026-09-21)
+
+The image, pod tooling, weight download, and dataset upload all work, but
+**training currently fails on ComfyUI's native trainer**: the second optimizer
+iteration dies with `RuntimeError: Trying to backward through the graph a
+second time`. This was reproduced on an L40S with the bf16 checkpoint, no
+gradient checkpointing, no offloading, `bypass_mode` both on and off, and
+gradient accumulation 1. The dataset detach patch fixes the encoding stage
+(the error then points at an `AddcmulBackward0` node from the model's gated
+residuals), so something upstream of the trainer reuses graph state across
+iterations. Revisit once ComfyUI or musubi-tuner has a working training recipe
+for this model; the image and setup can be reused as-is.
+
 There is an official `runpod/comfyui` image, but it does not pin a ComfyUI
 version and does not carry the dataset fix this training path needs, so this
 repo mirrors `editalive-runpod` with its own pinned image.

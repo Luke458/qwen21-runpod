@@ -46,8 +46,9 @@ tar -C "$(dirname "${SRC}")" -czf "${TARBALL}" "$(basename "${SRC}")"
 du -h "${TARBALL}" | awk '{print "  archive size:", $1}'
 
 SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -p "${PORT}")
+SCP_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -P "${PORT}")
 log "Uploading to root@${IP}:${DEST}"
-scp "${SSH_OPTS[@]}" "${TARBALL}" "root@${IP}:/tmp/qwen21-dataset.tgz"
+scp "${SCP_OPTS[@]}" "${TARBALL}" "root@${IP}:/tmp/qwen21-dataset.tgz"
 ssh -n "${SSH_OPTS[@]}" "root@${IP}" \
   "mkdir -p '${DEST}' && tar -xzf /tmp/qwen21-dataset.tgz -C '${DEST}' && rm -f /tmp/qwen21-dataset.tgz && ls '${DEST}/$(basename "${SRC}")' | wc -l"
 
