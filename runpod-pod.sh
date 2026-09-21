@@ -14,6 +14,7 @@
 #   ./runpod-pod.sh ssh      <podId>
 #   ./runpod-pod.sh status   <podId>
 #   ./runpod-pod.sh stop     <podId>
+#   ./runpod-pod.sh start    <podId>
 #   ./runpod-pod.sh terminate <podId>
 #
 # Env overrides:
@@ -279,6 +280,7 @@ EOF
 }
 
 cmd_stop()      { api POST "/pods/$1/stop"      >/dev/null && echo "Stop requested for $1"; }
+cmd_start()     { api POST "/pods/$1/start"     >/dev/null && echo "Start requested for $1"; }
 cmd_terminate() { api DELETE "/pods/$1"         >/dev/null && echo "Terminate requested for $1"; }
 
 case "${1:-}" in
@@ -290,6 +292,7 @@ case "${1:-}" in
   status)    shift; cmd_status "$@" ;;
   ssh)       shift; cmd_ssh "$@" ;;
   stop)      shift; cmd_stop "$@" ;;
+  start)     shift; cmd_start "$@" ;;
   terminate) shift; cmd_terminate "$@" ;;
   *) sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//' ;;
 esac
