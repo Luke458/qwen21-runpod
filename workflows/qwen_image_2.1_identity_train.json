@@ -1,0 +1,81 @@
+{
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "qwen_image_2.1_bf16.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "2": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "qwen3vl_8b_fp8_scaled.safetensors",
+        "type": "qwen_image",
+        "device": "default"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "qwen_image_2.1_vae_bf16.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "LoadImageTextDataSetFromFolder",
+      "inputs": {
+        "folder": "identity_lora_dataset2_face512"
+      }
+    },
+    "5": {
+      "class_type": "MakeTrainingDataset",
+      "inputs": {
+        "images": ["4", 0],
+        "vae": ["3", 0],
+        "clip": ["2", 0],
+        "texts": ["4", 1]
+      }
+    },
+    "6": {
+      "class_type": "TrainLoraNode",
+      "inputs": {
+        "model": ["1", 0],
+        "latents": ["5", 0],
+        "positive": ["5", 1],
+        "batch_size": 1,
+        "grad_accumulation_steps": 2,
+        "steps": 200,
+        "learning_rate": 0.0001,
+        "rank": 16,
+        "optimizer": "AdamW",
+        "loss_function": "MSE",
+        "seed": 42,
+        "training_dtype": "bf16",
+        "lora_dtype": "fp32",
+        "quantized_backward": false,
+        "algorithm": "LoRA",
+        "gradient_checkpointing": false,
+        "checkpoint_depth": 2,
+        "offloading": false,
+        "existing_lora": "[None]",
+        "bucket_mode": false,
+        "bypass_mode": false
+      }
+    },
+    "7": {
+      "class_type": "SaveLoRA",
+      "inputs": {
+        "lora": ["6", 0],
+        "prefix": "loras/identity/ohwx_qwen_image_2.1_raw_identity_dataset2_face512",
+        "steps": ["6", 2]
+      }
+    },
+    "8": {
+      "class_type": "LossGraphNode",
+      "inputs": {
+        "loss": ["6", 1],
+        "filename_prefix": "ohwx_qwen_image_2.1_raw_identity_dataset2_face512_loss"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+diff --git a/comfy_extras/nodes_dataset.py b/comfy_extras/nodes_dataset.py
+index 361328bc..d931e7d5 100644
+--- a/comfy_extras/nodes_dataset.py
++++ b/comfy_extras/nodes_dataset.py
+@@ -1851,6 +1851,16 @@ class ResolutionBucket(io.ComfyNode):
+         return io.NodeOutput(output_latents, output_conditions)
+ 
+ 
++def _detach_conditioning(conditioning):
++    detached = []
++    for entry in conditioning:
++        if isinstance(entry, (list, tuple)) and len(entry) > 0 and isinstance(entry[0], torch.Tensor):
++            detached.append([entry[0].detach(), *entry[1:]])
++        else:
++            detached.append(entry)
++    return detached
++
++
+ class MakeTrainingDataset(io.ComfyNode):
+     """Encode images with VAE and texts with CLIP to create a training dataset."""
+     @classmethod
+@@ -1920,7 +1930,7 @@ class MakeTrainingDataset(io.ComfyNode):
+         for img_tensor in images:
+             # img_tensor is [1, H, W, 3]
+             latent_tensor = vae.encode(img_tensor[:, :, :, :3])
+-            latents_list.append({"samples": latent_tensor})
++            latents_list.append({"samples": latent_tensor.detach()})
+ 
+         # Encode texts with CLIP
+         logging.info(f"Encoding {len(texts)} texts with CLIP...")
+@@ -1931,7 +1941,7 @@ class MakeTrainingDataset(io.ComfyNode):
+             else:
+                 tokens = clip.tokenize(text)
+                 cond = clip.encode_from_tokens_scheduled(tokens)
+-            conditioning_list.append(cond)
++            conditioning_list.append(_detach_conditioning(cond))
+ 
+         logging.info(
+             f"Created dataset with {len(latents_list)} latents and {len(conditioning_list)} conditioning."
