@@ -52,6 +52,14 @@ export REGISTRY=ghcr.io/<your-github-user>
 Or push to GitHub and run the `Build Qwen-Image 2.1 ComfyUI image` workflow;
 make the GHCR package public afterwards so RunPod can pull it.
 
+### 1a. Package visibility
+
+RunPod must be able to pull the image. If the GHCR package is public, no
+credentials are needed. If it stays private (the default), either make it
+public (profile → Packages → `qwen21-runpod` → Package settings → Change
+visibility → Public) or add a RunPod registry credential and pass
+`containerRegistryAuthId` when creating the template.
+
 ### 2. Register the template and boot a pod
 
 ```bash
